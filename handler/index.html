@@ -1,9 +1,5 @@
 <html>
 
-<head>
-    <script src="/static/js/jquery-3.2.1.min.js"></script>
-</head>
-
 <body>
     <div>
         <section>
@@ -11,7 +7,8 @@
         </section>
         <div style="text-align:center;margin: 50px auto;">
             <form id="upForm" action="#" method="post" enctype="multipart/form-data">
-                <input id="file" type="file" name="file" />
+                <input id="file" type="file" name="file" style="display:none" />
+                <label for="file">选择文件</label>
             </form>
         </div>
         <div id="output"></div>
@@ -22,6 +19,17 @@
     * {
         padding: 0;
         margin: 0;
+    }
+
+    label {
+        background: #946ce6;
+        border-radius: 10px;
+        color: #fff;
+        display: block;
+        padding: 20px;
+        width: 200px;
+        margin: 100px auto;
+        cursor: pointer;
     }
 
     body {
@@ -36,10 +44,11 @@
 
     #output {
         padding: 10px;
-        background: #bbb;
+        background: #f1eaff;
         color: #946ce6;
-        border: 2px solid #333;
+        border: 2px solid #946ce6;
         margin: 20px;
+        border-radius: 10px;
     }
 
     /* input[type=file]{
