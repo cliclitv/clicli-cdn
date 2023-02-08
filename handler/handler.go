@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"io"
 	"io/ioutil"
@@ -26,7 +28,15 @@ func Uplaod(w http.ResponseWriter, r *http.Request) {
 		}
 		defer file.Close()
 
-		newFile, err := os.Create("temp-" + pid + "-" + oid + head.Filename)
+		hash := md5.New()
+		hash.Write([]byte(head.Filename))
+		cipherText2 := hash.Sum(nil)
+		hexText := make([]byte, 32)
+		hex.Encode(hexText, cipherText2)
+
+		name := "temp-" + pid + "-" + oid + "-" + string(hexText) + ".mp4"
+
+		newFile, err := os.Create(name)
 		if err != nil {
 			sendMsg(w, 500, err.Error())
 			return
@@ -41,7 +51,7 @@ func Uplaod(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		sendMsg(w, 200, "上传成功")
+		sendMsg(w, 200, name)
 	}
 }
 
