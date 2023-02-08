@@ -2,25 +2,25 @@ package handler
 
 import (
 	"crypto/md5"
+	_ "embed"
 	"encoding/hex"
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 )
 
+//go:embed index.html
+var html string
+
 func Uplaod(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
-		data, err := ioutil.ReadFile("./static/upload.html")
-		if err != nil {
-			sendMsg(w, 500, err.Error())
-			return
-		}
-		io.WriteString(w, string(data))
+		io.WriteString(w, string(html))
 	} else if r.Method == "POST" {
-		pid := r.URL.Query().Get("pid")
-		oid := r.URL.Query().Get("oid")
+		uid := r.URL.Query().Get("uid")
+		if uid == "" {
+			sendMsg(w, 400, "权限不足")
+		}
 		file, head, err := r.FormFile("file")
 		if err != nil {
 			sendMsg(w, 500, err.Error())
@@ -34,7 +34,7 @@ func Uplaod(w http.ResponseWriter, r *http.Request) {
 		hexText := make([]byte, 32)
 		hex.Encode(hexText, cipherText2)
 
-		name := "temp-" + pid + "-" + oid + "-" + string(hexText) + ".mp4"
+		name := uid + "-" + string(hexText) + ".mp4"
 
 		newFile, err := os.Create(name)
 		if err != nil {

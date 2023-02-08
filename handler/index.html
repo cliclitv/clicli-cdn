@@ -9,11 +9,12 @@
         <section>
             文件上传
         </section>
-        <div style="width:60%;height:30%;text-align:center;margin: 50px auto;">
+        <div style="text-align:center;margin: 50px auto;">
             <form id="upForm" action="#" method="post" enctype="multipart/form-data">
                 <input id="file" type="file" name="file" />
             </form>
         </div>
+        <div id="output"></div>
     </div>
 </body>
 
@@ -33,6 +34,14 @@
         color: #fff;
     }
 
+    #output {
+        padding: 10px;
+        background: #bbb;
+        color: #946ce6;
+        border: 2px solid #333;
+        margin: 20px;
+    }
+
     /* input[type=file]{
         background: #946ce6;
         color: #fff;
@@ -47,6 +56,10 @@
         handleImageUpload(event)
     })
 
+    const o = document.querySelector('#output')
+
+    o.textContent = '还没上传'
+
 
     const handleImageUpload = event => {
         const files = event.target.files
@@ -55,6 +68,8 @@
 
         const url = window.location.pathname + window.location.search
 
+        o.textContent = '上传中...'
+
         fetch(url, {
             method: 'POST',
             body: formData
@@ -62,6 +77,7 @@
             .then(response => response.json())
             .then(data => {
                 console.log(data)
+                o.textContent = `https://cdn.clicli.cc/static/${data.msg}`
             })
             .catch(error => {
                 console.error(error)
