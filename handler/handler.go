@@ -21,6 +21,7 @@ func Uplaod(w http.ResponseWriter, r *http.Request) {
 		uid := r.URL.Query().Get("uid")
 		if uid == "" {
 			sendMsg(w, 400, "权限不足")
+			return
 		}
 		file, head, err := r.FormFile("file")
 		if err != nil {
@@ -34,6 +35,8 @@ func Uplaod(w http.ResponseWriter, r *http.Request) {
 		cipherText2 := hash.Sum(nil)
 		hexText := make([]byte, 32)
 		hex.Encode(hexText, cipherText2)
+
+		
 
 		name := uid + "-" + string(hexText) + path.Ext(head.Filename)
 

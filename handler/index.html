@@ -1,5 +1,9 @@
 <html>
 
+<head>
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.1/axios.min.js"></script>
+</head>
+
 <body>
     <div>
         <section>
@@ -79,18 +83,32 @@
 
         o.textContent = '上传中...'
 
-        fetch(url, {
-            method: 'POST',
-            body: formData
-        })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data)
-                o.textContent = `https://cdn.clicli.cc/static/${data.msg}`
+        axios
+            .post(url, formData, {
+                headers: { "Content-Type": "multipart/form-data" }, onUploadProgress: (evt) => {
+                    // 重点在这里，对于方法内的异步调用，使用let声明的变量obj不会发生越界
+                    o.textContent = (evt.loaded / evt.total * 100 | 0) + '%'
+                }
             })
-            .catch(error => {
-                console.error(error)
+            .then(function (res) {
+                o.textContent = `https://cdn.clicli.cc/static/${res.data.msg}`
             })
+            .catch(function (error) {
+                console.log(error);
+            });
+
+        // fetch(url, {
+        //     method: 'POST',
+        //     body: formData
+        // })
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         console.log(data)
+        //         o.textContent = `https://cdn.clicli.cc/static/${data.msg}`
+        //     })
+        //     .catch(error => {
+        //         console.error(error)
+        //     })
     }
 </script>
 
