@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path"
 )
 
 //go:embed index.html
@@ -34,7 +35,7 @@ func Uplaod(w http.ResponseWriter, r *http.Request) {
 		hexText := make([]byte, 32)
 		hex.Encode(hexText, cipherText2)
 
-		name := uid + "-" + string(hexText) + ".mp4"
+		name := uid + "-" + string(hexText) + path.Ext(head.Filename)
 
 		newFile, err := os.Create(name)
 		if err != nil {
