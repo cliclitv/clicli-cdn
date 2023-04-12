@@ -69,15 +69,17 @@ func Uplaod(w http.ResponseWriter, r *http.Request) {
 
 func Transform(name string){
 		// 设置 ffmpeg 命令行参数
-		
-		i:="./"+strings.Replace(name,"mp4","m3u8",1)
-		o:="./"+strings.Replace(name,".mp4","/",1)+"out%03d.ts"
-		createDateDir(strings.Replace(name,".mp4","/",1))
-		fmt.Println(i)
+		dir:= strings.Replace(name,".mp4","/",1)
+		i:="./"+dir+"index.m3u8"
+		o:="./"+dir+"out%03d.ts"
+		createDateDir(dir)
+
 		args := []string{"-i",
-		name,
+		"./"+name,
 		"-c",
 		"copy",
+		"-vbsf",
+		"h264_mp4toannexb",
 		"-map",
 		"0",
 		"-f",
