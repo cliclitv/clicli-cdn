@@ -7,8 +7,13 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"time"
 	"os"
 	"path"
+	"fmt"
+	"path/filepath"
+	"os/exec"
+	"strings"
 )
 
 //go:embed index.html
@@ -36,9 +41,9 @@ func Uplaod(w http.ResponseWriter, r *http.Request) {
 		hexText := make([]byte, 32)
 		hex.Encode(hexText, cipherText2)
 
-		
+		folderPath:=createDateDir("")
 
-		name := uid + "-" + string(hexText) + path.Ext(head.Filename)
+		name := folderPath+"/"+uid + "-" + string(hexText) + path.Ext(head.Filename)
 
 		newFile, err := os.Create(name)
 		if err != nil {
@@ -55,8 +60,64 @@ func Uplaod(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		go Transform(name)
+
+
 		sendMsg(w, 200, name)
 	}
+}
+
+func Transform(name string){
+		// 设置 ffmpeg 命令行参数
+		
+		i:="./"+strings.Replace(name,"mp4","m3u8",1)
+		o:="./"+strings.Replace(name,".mp4","/",1)+"out%03d.ts"
+		createDateDir(strings.Replace(name,".mp4","/",1))
+		fmt.Println(i)
+		args := []string{"-i",
+		name,
+		"-c",
+		"copy",
+		"-map",
+		"0",
+		"-f",
+		"segment",
+		"-segment_list",
+		i,
+		"-segment_time",
+		"6",
+		o}
+
+		// 创建 *exec.Cmd
+		cmd := exec.Command("ffmpeg", args...)
+	
+		// 运行 ffmpeg 命令
+		if err := cmd.Run(); err != nil {
+			fmt.Println(err)
+			return
+		}
+}
+
+// https://github.com/cliclitv/clicli-cdn.git
+
+func createDateDir(path string)string{
+	var folderName string
+	if path == ""{
+		folderName=time.Now().Format("20060102")
+	}else{
+		folderName = path
+	}
+	
+	folderPath := filepath.Join("./", folderName)
+
+	
+	_,err:= os.Stat(folderPath); 
+	
+	if os.IsNotExist(err){
+		os.Mkdir(folderPath,0777)
+		os.Chmod(folderPath,0777)
+	}
+	return folderPath
 }
 
 func sendMsg(w http.ResponseWriter, code int, msg string) {
