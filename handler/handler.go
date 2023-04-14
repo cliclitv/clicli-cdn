@@ -30,7 +30,7 @@ func Uplaod(w http.ResponseWriter, r *http.Request) {
 		}
 		file, head, err := r.FormFile("file")
 		ext := path.Ext(head.Filename)
-		if ext != ".mp4"{
+		if ext != ".mp4" && ext != ".mov" && ext != ".mkv"{
 			sendMsg(w, 403, "暂时只支持mp4.h264文件")
 			return
 		}
@@ -81,10 +81,10 @@ func Transform(name string){
 //libfdk_aac
 		args := []string{"-i",
 		"./"+name,
-		"-c:v", "libx264", "-b:v" ,"2000k","-c:a","aac","-s","1920x1080",
+		"-c:v", "libx264", "-b:v" ,"2000k","-c:a","libfdk_aac","-s","1920x1080",
 		"-vf", `movie=logo.png [logo]; [in][logo] overlay=10:10 [out]`,
 		"-map",
-		"[out]",
+		"0",
 		"-f",
 		"segment",
 		"-segment_list",
