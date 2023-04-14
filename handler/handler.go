@@ -29,6 +29,11 @@ func Uplaod(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		file, head, err := r.FormFile("file")
+		ext := path.Ext(head.Filename)
+		if ext != ".mp4"{
+			sendMsg(w, 403, "暂时只支持mp4.h264文件")
+			return
+		}
 		if err != nil {
 			sendMsg(w, 500, err.Error())
 			return
@@ -43,7 +48,7 @@ func Uplaod(w http.ResponseWriter, r *http.Request) {
 
 		folderPath:=createDateDir("")
 
-		name := folderPath+"/"+uid + "-" + string(hexText) + path.Ext(head.Filename)
+		name := folderPath+"/"+uid + "_" + string(hexText) + path.Ext(head.Filename)
 
 		newFile, err := os.Create(name)
 		if err != nil {
@@ -73,31 +78,39 @@ func Transform(name string){
 		i:="./"+dir+"index.m3u8"
 		o:="./"+dir+"out%03d.ts"
 		createDateDir(dir)
-
+//libfdk_aac
 		args := []string{"-i",
 		"./"+name,
-		"-c",
-		"copy",
-		"-vbsf",
-		"h264_mp4toannexb",
+		"-c:v", "libx264", "-b:v" ,"2000k","-c:a","aac","-s","1920x1080",
+		"-vf", `movie=logo.png [logo]; [in][logo] overlay=10:10 [out]`,
 		"-map",
-		"0",
+		"[out]",
 		"-f",
 		"segment",
 		"-segment_list",
 		i,
 		"-segment_time",
-		"6",
+		"3",
 		o}
 
 		// 创建 *exec.Cmd
 		cmd := exec.Command("ffmpeg", args...)
+
+
+		fmt.Println(cmd)
+
+		// output, _ := cmd.CombinedOutput()
+		// fmt.Println(string)
 	
 		// 运行 ffmpeg 命令
 		if err := cmd.Run(); err != nil {
 			fmt.Println(err)
 			return
 		}
+
+		// 最后删除文件
+
+		_=os.Remove(name)
 }
 
 // https://github.com/cliclitv/clicli-cdn.git
