@@ -82,7 +82,7 @@ func Transform(name string){
 		args := []string{"-i",
 		"./"+name,
 		"-c:v", "libx264", "-b:v" ,"2000k","-c:a","copy","-s","1920x1080",
-		"-vf", `movie=logo.png [logo]; [in][logo] overlay=10:10, scale=1920:-2,pad=iw:1080:0:(oh-ih)/2:black [out]`,
+		"-vf", `movie=logo.png, scale=iw*0.4:-1 [logo]; [in][logo] overlay=10:10, scale=1920:-2,pad=iw:1080:0:(oh-ih)/2:black [out]`,
 		"-map",
 		"0",
 		"-f",
