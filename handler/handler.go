@@ -84,7 +84,7 @@ func Transform(name string) {
 		"-i",
 		"./" + name,
 		"-i", "logo.png",
-		"-filter_complex", `[1][0]scale2ref=iw/10:-2[b][a];[a][b] overlay=10:10,scale=1920:-2,pad=iw:1080:0:(oh-ih)/2:black`,
+		"-filter_complex", `[1][0]scale2ref=iw/8:iw/16 [b][a];[a][b] overlay=10:10,scale=1920:-2,pad=iw:1080:0:(oh-ih)/2:black`,
 		"-c:v", "libx264", "-b:v", "2000k", "-c:a", "copy",
 		// "-vf", `movie=logo.png, scale=` + output + `*0.4:-1 [logo]; [in][logo] overlay=10:10, scale=1920:-2,pad=iw:1080:0:(oh-ih)/2:black [out]`,
 		"-map",
