@@ -21,6 +21,7 @@ import (
 var html string
 
 func Uplaod(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Access-Control-Allow-Origin", "*")
 	if r.Method == "GET" {
 		io.WriteString(w, string(html))
 	} else if r.Method == "POST" {
