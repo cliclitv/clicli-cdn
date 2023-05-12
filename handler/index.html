@@ -73,29 +73,61 @@
 
     o.textContent = '还没上传'
 
+    const sliceFile = (file) => {
+        const size = 1024 * 1024;
+        const total = file.size;
+        let out = []
 
-    const handleImageUpload = event => {
+        for (i = 0; i < total; i += size) {
+            const s = file.slice(i, i + size)
+            console.log(s)
+            out.push(s)
+        }
+        return out
+    }
+
+
+    let id = 1;
+
+    const handleImageUpload = async event => {
         const files = event.target.files
-        const formData = new FormData()
-        formData.append('file', files[0])
+        // 需要先切片
+        const chunks = sliceFile(files[0])
 
-        const url = window.location.pathname + window.location.search
+        console.log(files[0])
 
-        o.textContent = '上传中...'
+        const p = chunks.map(uploadChunk)
 
-        axios
-            .post(url, formData, {
-                headers: { "Content-Type": "multipart/form-data" }, onUploadProgress: (evt) => {
-                    // 重点在这里，对于方法内的异步调用，使用let声明的变量obj不会发生越界
-                    o.textContent = (evt.loaded / evt.total * 100 | 0) + '%'
-                }
-            })
-            .then(function (res) {
-                o.textContent = `https://cdn.clicli.cc/video/${res.data.msg.replace('.mp4', '/index.m3u8')}`
-            })
-            .catch(function (error) {
-                console.log(error);
-            });
+        async function uploadChunk(chunk, index) {
+            const formData = new FormData()
+            formData.append('id', id)
+            formData.append('num', index)
+            formData.append('total', files[0].size)
+            formData.append('size', 1024 * 1024)
+            formData.append('name', files[0].name)
+            formData.append('data', chunk)
+
+            const url = 'http://localhost:2333/new_chunk'
+
+            o.textContent = '上传中...'
+
+            axios
+                .post(url, formData, {
+                    headers: { "Content-Type": "multipart/form-data" }, onUploadProgress: (evt) => {
+                        o.textContent = (evt.loaded / evt.total * 100 | 0) + '%'
+                    }
+                })
+                .then(function (res) {
+                    o.textContent = `https://cdn.clicli.cc/video/${res.data.msg.replace('.mp4', '/index.m3u8')}`
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+
+        }
+
+        await Promise.all(p)
+
     }
 </script>
 
