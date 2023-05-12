@@ -7,8 +7,8 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/last_chunk", handler.Uplaod)
-	http.Handle("/new_chunk", handleUploadChunk())
+	http.HandleFunc("/upload", handler.Uplaod)
+	http.Handle("/chunk", handleUploadChunk())
 	err := http.ListenAndServe(":2333", nil)
 	if err != nil {
 		fmt.Println(err.Error())

@@ -87,18 +87,44 @@
     }
 
 
-    let id = 1;
+    let id = Math.floor(Math.random() * 9) + 1;
+    let host = window.location.origin
 
-    const handleImageUpload = async event => {
+    const handleImageUpload = event => {
         const files = event.target.files
         // 需要先切片
         const chunks = sliceFile(files[0])
 
-        console.log(files[0])
+        let queue = []
 
-        const p = chunks.map(uploadChunk)
+        chunks.forEach((chunk, index) => {
+            queue.push(() => uploadChunk(chunk, index))
+        })
 
-        async function uploadChunk(chunk, index) {
+        queue.push(combineChunk)
+
+        function combineChunk() {
+            return new Promise(r => {
+                fetch(window.location.pathname + window.location.search, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        id: id.toString(),
+                        name: files[0].name
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(res => res.json()).then(data => {
+                    r()
+                    console.log(123)
+                    o.textContent = `https://cdn.clicli.cc/video/${data.msg.replace('.mp4', '/index.m3u8')}`
+                })
+            })
+
+        }
+
+        function uploadChunk(chunk, index) {
+            console.log(index)
             const formData = new FormData()
             formData.append('id', id)
             formData.append('num', index + 1)
@@ -107,26 +133,29 @@
             formData.append('name', files[0].name)
             formData.append('data', chunk)
 
-            const url = 'http://localhost:2333/new_chunk'
+            const url = `${host}/chunk`
 
             o.textContent = '上传中...'
 
-            axios
-                .post(url, formData, {
-                    headers: { "Content-Type": "multipart/form-data" }, onUploadProgress: (evt) => {
-                        o.textContent = (evt.loaded / evt.total * 100 | 0) + '%'
-                    }
-                })
-                .then(function (res) {
-                    o.textContent = `https://cdn.clicli.cc/video/${res.data.msg.replace('.mp4', '/index.m3u8')}`
-                })
-                .catch(function (error) {
-                    console.log(error);
-                });
+            return new Promise(r => {
+                axios
+                    .post(url, formData, {
+                        headers: { "Content-Type": "multipart/form-data" },
+                    })
+                    .then(function (res) {
+                        r(index)
+                        console.log(111, index)
+                        o.textContent = index / chunks.length * 100 + '%'
+                    })
+            })
 
         }
 
-        await Promise.all(p)
+        // 最后发一个合并请求即可
+
+        queue.reduce((cur, next) => {
+            return cur.then(next);
+        }, Promise.resolve());
 
     }
 </script>
