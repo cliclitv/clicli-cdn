@@ -8,9 +8,8 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
-	"sort"
 	"strconv"
-	"log"
+	"sort"
 )
 
 const (
@@ -34,6 +33,10 @@ func ProcessChunk(r *http.Request) error {
 		return fmt.Errorf("failed to parse chunk %w", err)
 	}
 
+	if err := os.MkdirAll(chunk.UploadID, 02750); err != nil {
+		return err
+	}
+
 	if err := StoreChunk(chunk); err != nil {
 		return err
 	}
@@ -44,22 +47,9 @@ func ProcessChunk(r *http.Request) error {
 func CompleteChunk(uploadID, filename string) error {
 	uploadDir := fmt.Sprintf("%s/%s", uploadDir, uploadID)
 
-
-	f, err := RebuildFile(uploadDir)
+	err := RebuildFile(uploadDir, filename)
 	if err != nil {
 		return fmt.Errorf("failed to rebuild file %w", err)
-	}
-
-	defer f.Close()
-
-	newFile, err := os.Create(filename)
-	if err != nil {
-		return fmt.Errorf("failed creating file %w", err)
-	}
-	defer newFile.Close()
-
-	if _, err := io.Copy(newFile, f); err != nil {
-		return fmt.Errorf("failed copying file contents %w", err)
 	}
 
 	return nil
@@ -152,6 +142,16 @@ func ParseChunk(r *http.Request) (*Chunk, error) {
 	return &chunk, nil
 }
 
+type ByChunk []os.FileInfo
+
+func (a ByChunk) Len() int      { return len(a) }
+func (a ByChunk) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a ByChunk) Less(i, j int) bool {
+	ai, _ := strconv.Atoi(a[i].Name())
+	aj, _ := strconv.Atoi(a[j].Name())
+	return ai < aj
+}
+
 func StoreChunk(chunk *Chunk) error {
 	chunkFile, err := os.Create(fmt.Sprintf("%s/%d", chunk.UploadDir, chunk.ChunkNumber))
 	if err != nil {
@@ -165,58 +165,40 @@ func StoreChunk(chunk *Chunk) error {
 	return nil
 }
 
-type ByChunk []os.FileInfo
-
-func (a ByChunk) Len() int      { return len(a) }
-func (a ByChunk) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
-func (a ByChunk) Less(i, j int) bool {
-	ai, _ := strconv.Atoi(a[i].Name())
-	aj, _ := strconv.Atoi(a[j].Name())
-	return ai < aj
-}
-
-func RebuildFile(dir string) (*os.File, error) {
-	fileInfos, err := ioutil.ReadDir(uploadDir)
+func RebuildFile(dir string, name string) error {
+	fileInfos, err := ioutil.ReadDir(dir)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-
-	fullFile, err := ioutil.TempFile("", "fullfile-")
+	fullFile, err := os.Create(name)
 	if err != nil {
-		return nil, err
+		return err
 	}
-
 	sort.Sort(ByChunk(fileInfos))
-
-
 	for _, fs := range fileInfos {
-		if err := appendChunk(uploadDir, fs, fullFile); err != nil {
-			return nil, err
+		if err := appendChunk(dir, fs, fullFile); err != nil {
+			return err
 		}
 	}
+
+	defer fullFile.Close()
 
 	// if err := os.RemoveAll(uploadDir); err != nil {
 	// 	return nil, err
 	// }
 
-
-	return fullFile, nil
+	return nil
 }
 
 func appendChunk(uploadDir string, fs os.FileInfo, fullFile *os.File) error {
 	src, err := os.Open(uploadDir + "/" + fs.Name())
 
 	if err != nil {
-
 		return err
 	}
 	defer src.Close()
 	if _, err := io.Copy(fullFile, src); err != nil {
-		log.Println(111);
-		log.Println(err);
-		fmt.Printf("%s",fullFile);
-		fmt.Printf("%s",src);
 		return err
 	}
 

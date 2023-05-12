@@ -74,7 +74,7 @@
     o.textContent = '还没上传'
 
     const sliceFile = (file) => {
-        const size = 1024 * 1024;
+        const size = 1024 * 1024 * 2;
         const total = file.size;
         let out = []
 
@@ -101,9 +101,9 @@
         async function uploadChunk(chunk, index) {
             const formData = new FormData()
             formData.append('id', id)
-            formData.append('num', index)
+            formData.append('num', index + 1)
             formData.append('total', files[0].size)
-            formData.append('size', 1024 * 1024)
+            formData.append('size', 1024 * 1024 * 2)
             formData.append('name', files[0].name)
             formData.append('data', chunk)
 
