@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	maxChunkSize = int64(100 << 10) // 5MB
+	maxChunkSize = int64(100 << 20) // 5MB
 	uploadDir    = "./chunks"
 )
 
@@ -29,12 +29,11 @@ type Chunk struct {
 
 func ProcessChunk(r *http.Request) error {
 	chunk, err := ParseChunk(r)
+
+	CreateDateDir(chunk.UploadDir)
+	
 	if err != nil {
 		return fmt.Errorf("failed to parse chunk %w", err)
-	}
-
-	if err := os.MkdirAll(chunk.UploadID, 02750); err != nil {
-		return err
 	}
 
 	if err := StoreChunk(chunk); err != nil {

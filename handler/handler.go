@@ -48,7 +48,7 @@ func Uplaod(w http.ResponseWriter, r *http.Request) {
 		hexText := make([]byte, 32)
 		hex.Encode(hexText, cipherText2)
 
-		folderPath := createDateDir("")
+		folderPath := CreateDateDir("")
 
 		name := folderPath + "/" + uid + "_" + string(hexText) + path.Ext(head.Filename)
 
@@ -78,7 +78,7 @@ func Transform(name string) {
 	dir := strings.Replace(name, ".mp4", "/", 1)
 	i := "./" + dir + "index.m3u8"
 	o := "./" + dir + "out%03d.ts"
-	createDateDir(dir)
+	CreateDateDir(dir)
 
 	//libfdk_aac
 	args := []string{
@@ -114,9 +114,8 @@ func Transform(name string) {
 	_ = os.Remove(name)
 }
 
-// https://github.com/cliclitv/clicli-cdn.git
 
-func createDateDir(path string) string {
+func CreateDateDir(path string) string {
 	var folderName string
 	if path == "" {
 		folderName = time.Now().Format("20060102")
