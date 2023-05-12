@@ -115,9 +115,8 @@
                         'Content-Type': 'application/json'
                     }
                 }).then(res => res.json()).then(data => {
-                    r()
-                    console.log(123)
                     o.textContent = `https://cdn.clicli.cc/video/${data.msg.replace('.mp4', '/index.m3u8')}`
+                    r()
                 })
             })
 
@@ -135,23 +134,23 @@
 
             const url = `${host}/chunk`
 
-            o.textContent = '上传中...'
-
             return new Promise(r => {
                 axios
                     .post(url, formData, {
                         headers: { "Content-Type": "multipart/form-data" },
                     })
                     .then(function (res) {
+                        o.textContent = `视频分块上传中（${index + 1}/${chunks.length}）`
                         r(index)
-                        console.log(111, index)
-                        o.textContent = index / chunks.length * 100 + '%'
+
                     })
             })
 
         }
 
         // 最后发一个合并请求即可
+
+        o.textContent = `视频分块上传中（0/${chunks.length}）`
 
         queue.reduce((cur, next) => {
             return cur.then(next);

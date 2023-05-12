@@ -185,9 +185,9 @@ func RebuildFile(dir string, name string) error {
 
 	defer fullFile.Close()
 
-	// if err := os.RemoveAll(uploadDir); err != nil {
-	// 	return err
-	// }
+	if err := os.RemoveAll(uploadDir); err != nil {
+		return err
+	}
 
 	return nil
 }
