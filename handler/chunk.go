@@ -30,6 +30,8 @@ type Chunk struct {
 func ProcessChunk(r *http.Request) error {
 	chunk, err := ParseChunk(r)
 
+
+	CreateDateDir(uploadDir)
 	CreateDateDir(chunk.UploadDir)
 	
 	if err != nil {
@@ -81,7 +83,7 @@ func ParseChunk(r *http.Request) (*Chunk, error) {
 	buf.Reset()
 
 	// dir to where we store our chunk
-	chunk.UploadDir = fmt.Sprintf("%s/%s", uploadDir, chunk.UploadID)
+	chunk.UploadDir = fmt.Sprintf("%s/%s/", uploadDir, chunk.UploadID)
 
 	// 2
 	if err := getPart("num", reader, buf); err != nil {
@@ -183,9 +185,9 @@ func RebuildFile(dir string, name string) error {
 
 	defer fullFile.Close()
 
-	if err := os.RemoveAll(uploadDir); err != nil {
-		return err
-	}
+	// if err := os.RemoveAll(uploadDir); err != nil {
+	// 	return err
+	// }
 
 	return nil
 }

@@ -1,10 +1,8 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
-
 	"github.com/cliclitv/clicli-cdn/handler"
 )
 
@@ -25,27 +23,5 @@ func handleUploadChunk() http.Handler {
 		}
 
 		w.Write([]byte("chunk processed"))
-	})
-}
-
-func handleCompletedChunk() http.Handler {
-	type request struct {
-		UploadID string `json:"id"`
-		Filename string `json:"name"`
-	}
-
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var payload request
-		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		if err := handler.CompleteChunk(payload.UploadID, payload.Filename); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.Write([]byte("file processed"))
 	})
 }

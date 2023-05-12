@@ -54,7 +54,7 @@ func Uplaod(w http.ResponseWriter, r *http.Request) {
 
 		// 先合并
 
-		if err := CompleteChunk(payload.UploadID, payload.Filename); err != nil {
+		if err := CompleteChunk(payload.UploadID, name); err != nil {
 			sendMsg(w, 500, err.Error())
 			return 
 		}
