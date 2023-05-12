@@ -135,22 +135,20 @@
             const url = `${host}/chunk`
 
             return new Promise(r => {
-                axios
-                    .post(url, formData, {
-                        headers: { "Content-Type": "multipart/form-data" },
-                    })
-                    .then(function (res) {
-                        o.textContent = `视频分块上传中（${index + 1}/${chunks.length}）`
-                        r(index)
+                o.textContent = `视频分块上传中（${index}/${chunks.length}）`
 
-                    })
+                fetch(url, {
+                    body: formData,
+                    method: 'POST'
+                }).then(res => res.text()).then(data => {
+                    console.log(data)
+                    r(data)
+                })
             })
 
         }
 
         // 最后发一个合并请求即可
-
-        o.textContent = `视频分块上传中（0/${chunks.length}）`
 
         queue.reduce((cur, next) => {
             return cur.then(next);
