@@ -8,13 +8,13 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
-	"strconv"
 	"sort"
+	"strconv"
 )
 
 const (
-	maxChunkSize = int64(5 << 20) // 5MB
-	uploadDir    = "./data/chunks"
+	maxChunkSize = int64(100 << 10) // 5MB
+	uploadDir    = "./chunks"
 )
 
 type Chunk struct {
@@ -184,9 +184,9 @@ func RebuildFile(dir string, name string) error {
 
 	defer fullFile.Close()
 
-	// if err := os.RemoveAll(uploadDir); err != nil {
-	// 	return nil, err
-	// }
+	if err := os.RemoveAll(uploadDir); err != nil {
+		return err
+	}
 
 	return nil
 }
