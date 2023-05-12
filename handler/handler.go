@@ -30,41 +30,33 @@ func Uplaod(w http.ResponseWriter, r *http.Request) {
 			sendMsg(w, 400, "权限不足")
 			return
 		}
-		file, head, err := r.FormFile("file")
-		ext := path.Ext(head.Filename)
-		if ext != ".mp4" && ext != ".mov" && ext != ".mkv" {
-			sendMsg(w, 403, "暂时只支持mp4.h264文件")
-			return
+
+		type request struct {
+			UploadID string `json:"id"`
+			Filename string `json:"name"`
 		}
-		if err != nil {
+
+		var payload request
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 			sendMsg(w, 500, err.Error())
 			return
 		}
-		defer file.Close()
 
 		hash := md5.New()
-		hash.Write([]byte(head.Filename))
+		hash.Write([]byte(payload.Filename))
 		cipherText2 := hash.Sum(nil)
 		hexText := make([]byte, 32)
 		hex.Encode(hexText, cipherText2)
 
 		folderPath := CreateDateDir("")
 
-		name := folderPath + "/" + uid + "_" + string(hexText) + path.Ext(head.Filename)
+		name := folderPath + "/" + uid + "_" + string(hexText) + path.Ext(payload.Filename)
 
-		newFile, err := os.Create(name)
-		if err != nil {
+		// 先合并
+
+		if err := CompleteChunk(payload.UploadID, payload.Filename); err != nil {
 			sendMsg(w, 500, err.Error())
-			return
-		}
-
-		defer newFile.Close()
-
-		_, err = io.Copy(newFile, file)
-
-		if err != nil {
-			sendMsg(w, 500, err.Error())
-			return
+			return 
 		}
 
 		go Transform(name)
@@ -113,7 +105,6 @@ func Transform(name string) {
 
 	_ = os.Remove(name)
 }
-
 
 func CreateDateDir(path string) string {
 	var folderName string
